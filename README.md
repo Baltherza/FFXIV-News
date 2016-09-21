@@ -1,1 +1,1 @@
-# discord-ffxiv-tweet
+# discord-ffxiv-news

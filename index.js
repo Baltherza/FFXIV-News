@@ -3,7 +3,7 @@ const Discord = require("discord.js");
 const winston = require("winston");
 const request = require('request');
 
-// channel in discord to post new tweets to
+// channel in discord to post new lodestone topics to
 const CHANNEL_NAME="final_fantasy_xiv";
 // discord stoken
 const token = process.env.DISCORD_BOT_SECRET;
@@ -51,7 +51,7 @@ const log = new (winston.Logger)({
 			level: "info"
 		}),
 		new (require("winston-daily-rotate-file"))({
-			filename: "-ffxiv-tweet.log",
+			filename: "-ffxiv-news.log",
 			timestamp: tsFormat,
 			datePattern: "yyyy-MM-dd",
 			prepend: true,

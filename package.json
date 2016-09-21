@@ -1,5 +1,5 @@
 {
-  "name": "discord-ffxiv-tweet",
+  "name": "discord-ffxiv-news",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/karlr42/discord-ffxiv-tweet.git"
+    "url": "git+https://github.com/karlr42/discord-ffxiv-news.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/karlr42/discord-ffxiv-tweet/issues"
+    "url": "https://github.com/karlr42/discord-ffxiv-news/issues"
   },
-  "homepage": "https://github.com/karlr42/discord-ffxiv-tweet#readme",
+  "homepage": "https://github.com/karlr42/discord-ffxiv-news#readme",
   "dependencies": {
     "discord.js": "^9.2.0",
     "lodash": "^4.16.1",
