@@ -1,6 +1,16 @@
+const _ = require("lodash");
 const Discord = require("discord.js");
 const winston = require("winston");
-var request = require('request');
+const request = require('request');
+
+// channel in discord to post new tweets to
+const CHANNEL_NAME="final_fantasy_xiv";
+// discord stoken
+const token = process.env.DISCORD_BOT_SECRET;
+// how often to poll lodestone API
+const CHECK_INTERVAL = 5 * 60 * 1000;
+
+var previoustTopicTimestamp = null;
 
 // lodestone api/data functions
 var getLodestoneData = function(callback){
@@ -18,12 +28,13 @@ var getLodestoneData = function(callback){
 			}
 			callback(json);
 		}else{
-			logger.error("Error accessing xivdb API : " + error);
+			log.error("Error accessing xivdb API : " + error);
 		}
 	});
 };
 
 var printLodestoneTopic = function(channel, topic){
+	log.info("Posting message to channel "+channel.id);
 	channel.sendMessage(topic.title);
 	channel.sendMessage(topic.url);
 	channel.sendMessage(topic.banner);
@@ -31,7 +42,7 @@ var printLodestoneTopic = function(channel, topic){
 
 // log setup
 const tsFormat = () => (new Date()).toLocaleTimeString();
-const logger = new (winston.Logger)({
+const log = new (winston.Logger)({
 	transports: [
 		// colorize the output to the console
 		new (winston.transports.Console)({
@@ -49,21 +60,32 @@ const logger = new (winston.Logger)({
 	]
 });
 
-// channel in discord to post new tweets to
-const CHANNEL_NAME="final_fantasy_xiv";
-
-// discord setup
 const bot = new Discord.Client();
-const token = process.env.DISCORD_BOT_SECRET;
 
 bot.on("ready", () => {
-	logger.info("Bot ready.");
+	log.info("Bot ready.");
+	setInterval(function(){
+		log.info("Checking lodestone.");
+		getLodestoneData(function(data){
+			if(data && data.hasOwnProperty("topics") && data.topics.length > 0){
+				var mostRecentTopic = data.topics[0];
+				// if the most recent is newer than what we've seen, post it
+				if(previoustTopicTimestamp != null 
+					&& mostRecentTopic.timestamp > previoustTopicTimestamp){ 
+					_.each(bot.channels.findAll("name", CHANNEL_NAME), function(channel){
+						printLodestoneTopic(channel, mostRecentTopic);
+					});
+				}
+				previoustTopicTimestamp = mostRecentTopic.timestamp;
+			}
+		});
+	}, CHECK_INTERVAL);
 });
 
 // create an event listener for messages
 bot.on("message", message => {
 	if (message.content === "!xivnews") {
-		logger.info("Responding to message.");
+		log.info("Responding to message.");
 		getLodestoneData(function(data){
 			printLodestoneTopic(message.channel, data.topics[0]);
 		});
