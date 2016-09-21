@@ -6,6 +6,15 @@ const isTweet = _.conforms({
 	id_str: _.isString,
 	text: _.isString,
 });
+function isReply(tweet) {
+if ( tweet.retweeted_status
+	|| tweet.in_reply_to_status_id
+	|| tweet.in_reply_to_status_id_str
+	|| tweet.in_reply_to_user_id
+	|| tweet.in_reply_to_user_id_str
+	|| tweet.in_reply_to_screen_name )
+	return true;
+}
 
 // log setup
 const tsFormat = () => (new Date()).toLocaleTimeString();
@@ -18,7 +27,7 @@ const logger = new (winston.Logger)({
 			level: "info"
 		}),
 		new (require("winston-daily-rotate-file"))({
-			filename: "logFile.log",
+			filename: "-ffxiv-tweet.log",
 			timestamp: tsFormat,
 			datePattern: "yyyy-MM-dd",
 			prepend: true,
@@ -50,7 +59,7 @@ bot.on("ready", () => {
 	// init twitter listening
 	twitterClient.stream("statuses/filter", {follow: FFXIV_TWITTER_ID}, function(stream) {
 		stream.on("data", function(event) {
-			if(isTweet(event)){
+			if(isTweet(event) && !isReply(event)){
 				logger.info("Twitter event from stream API.");
 				var channel = bot.channels.find("name", CHANNEL_NAME)
 				if(channel){
