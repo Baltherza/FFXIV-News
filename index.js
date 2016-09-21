@@ -1,20 +1,33 @@
 const Discord = require("discord.js");
-const Twitter = require("twitter");
 const winston = require("winston");
-const _ = require("lodash")
-const isTweet = _.conforms({
-	id_str: _.isString,
-	text: _.isString,
-});
-function isReply(tweet) {
-if ( tweet.retweeted_status
-	|| tweet.in_reply_to_status_id
-	|| tweet.in_reply_to_status_id_str
-	|| tweet.in_reply_to_user_id
-	|| tweet.in_reply_to_user_id_str
-	|| tweet.in_reply_to_screen_name )
-	return true;
-}
+var request = require('request');
+
+// lodestone api/data functions
+var getLodestoneData = function(callback){
+	request("http://xivdb.com/assets/lodestone.json", function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+			var json;
+			try{
+				json = JSON.parse(body);
+			}catch(e){
+				// fallback
+				var startPos = body.indexOf('({');
+				var endPos = body.indexOf('})');
+				var jsonStr = body.substring(startPos+1, endPos+1);
+				json = JSON.parse(jsonStr);
+			}
+			callback(json);
+		}else{
+			logger.error("Error accessing xivdb API : " + error);
+		}
+	});
+};
+
+var printLodestoneTopic = function(channel, topic){
+	channel.sendMessage(topic.title);
+	channel.sendMessage(topic.url);
+	channel.sendMessage(topic.banner);
+};
 
 // log setup
 const tsFormat = () => (new Date()).toLocaleTimeString();
@@ -36,9 +49,6 @@ const logger = new (winston.Logger)({
 	]
 });
 
-// screen name of twitter account to monitor
-const FFXIV_TWITTER = "FF_XIV_EN";
-const FFXIV_TWITTER_ID = "161223163";
 // channel in discord to post new tweets to
 const CHANNEL_NAME="final_fantasy_xiv";
 
@@ -46,47 +56,16 @@ const CHANNEL_NAME="final_fantasy_xiv";
 const bot = new Discord.Client();
 const token = process.env.DISCORD_BOT_SECRET;
 
-// twitter setup
-var twitterClient = new Twitter({
-	consumer_key: process.env.TWITTER_CONSUMER_KEY,
-	consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-	access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
-	access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
-});
-
 bot.on("ready", () => {
 	logger.info("Bot ready.");
-	// init twitter listening
-	twitterClient.stream("statuses/filter", {follow: FFXIV_TWITTER_ID}, function(stream) {
-		stream.on("data", function(event) {
-			if(isTweet(event) && !isReply(event)){
-				logger.info("Twitter event from stream API.");
-				var channels = bot.channels.findAll("name", CHANNEL_NAME);
-				_.each(channels, function(channel){
-					if(channel){
-						channel.sendMessage(event.text);
-					}
-				});
-			}
-		});
-		stream.on("error", function(error) {
-			logger.error(error);
-		});
-	});
 });
 
 // create an event listener for messages
 bot.on("message", message => {
-	if (message.content === "!xivtweet") {
+	if (message.content === "!xivnews") {
 		logger.info("Responding to message.");
-		twitterClient.get("statuses/user_timeline.json?screen_name="+FFXIV_TWITTER+"&count=1", function(error, tweets, response) {
-			if(error){
-				logger.error(error);
-				message.channel.sendMessage("Error when getting tweet :(");
-				throw error;
-			}
-			var tweet = tweets[0];
-			message.channel.sendMessage(tweet.text);
+		getLodestoneData(function(data){
+			printLodestoneTopic(message.channel, data.topics[0]);
 		});
 	}
 });
