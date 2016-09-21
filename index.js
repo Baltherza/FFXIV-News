@@ -10,7 +10,7 @@ const token = process.env.DISCORD_BOT_SECRET;
 // how often to poll lodestone API
 const CHECK_INTERVAL = 5 * 60 * 1000;
 
-var previoustTopicTimestamp = null;
+var previousTopicTimestamp = null;
 
 // lodestone api/data functions
 var getLodestoneData = function(callback){
@@ -70,13 +70,13 @@ bot.on("ready", () => {
 			if(data && data.hasOwnProperty("topics") && data.topics.length > 0){
 				var mostRecentTopic = data.topics[0];
 				// if the most recent is newer than what we've seen, post it
-				if(previoustTopicTimestamp != null 
-					&& mostRecentTopic.timestamp > previoustTopicTimestamp){ 
+				if(previousTopicTimestamp != null 
+					&& mostRecentTopic.timestamp > previousTopicTimestamp){ 
 					_.each(bot.channels.findAll("name", CHANNEL_NAME), function(channel){
 						printLodestoneTopic(channel, mostRecentTopic);
 					});
 				}
-				previoustTopicTimestamp = mostRecentTopic.timestamp;
+				previousTopicTimestamp = mostRecentTopic.timestamp;
 			}
 		});
 	}, CHECK_INTERVAL);
