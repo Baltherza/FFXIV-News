@@ -61,10 +61,12 @@ bot.on("ready", () => {
 		stream.on("data", function(event) {
 			if(isTweet(event) && !isReply(event)){
 				logger.info("Twitter event from stream API.");
-				var channel = bot.channels.find("name", CHANNEL_NAME)
-				if(channel){
-					channel.sendMessage(event.text);
-				}
+				var channels = bot.channels.findAll("name", CHANNEL_NAME);
+				_.each(channels, function(channel){
+					if(channel){
+						channel.sendMessage(event.text);
+					}
+				});
 			}
 		});
 		stream.on("error", function(error) {
