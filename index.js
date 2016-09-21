@@ -1,9 +1,30 @@
 const Discord = require("discord.js");
 const Twitter = require("twitter");
-const _ = require('lodash')
+const winston = require("winston");
+const _ = require("lodash")
 const isTweet = _.conforms({
 	id_str: _.isString,
 	text: _.isString,
+});
+
+// log setup
+const tsFormat = () => (new Date()).toLocaleTimeString();
+const logger = new (winston.Logger)({
+	transports: [
+		// colorize the output to the console
+		new (winston.transports.Console)({
+			timestamp: tsFormat,
+			colorize: true,
+			level: "info"
+		}),
+		new (require("winston-daily-rotate-file"))({
+			filename: "logFile.log",
+			timestamp: tsFormat,
+			datePattern: "yyyy-MM-dd",
+			prepend: true,
+			level: "info"
+		})
+	]
 });
 
 // screen name of twitter account to monitor
@@ -25,12 +46,12 @@ var twitterClient = new Twitter({
 });
 
 bot.on("ready", () => {
-	console.log("Bot ready.");
+	logger.info("Bot ready.");
 	// init twitter listening
 	twitterClient.stream("statuses/filter", {follow: FFXIV_TWITTER_ID}, function(stream) {
 		stream.on("data", function(event) {
 			if(isTweet(event)){
-				console.log("Twitter event from stream API.");
+				logger.info("Twitter event from stream API.");
 				var channel = bot.channels.find("name", CHANNEL_NAME)
 				if(channel){
 					channel.sendMessage(event.text);
@@ -38,7 +59,7 @@ bot.on("ready", () => {
 			}
 		});
 		stream.on("error", function(error) {
-			console.log(error);
+			logger.error(error);
 		});
 	});
 });
@@ -46,10 +67,10 @@ bot.on("ready", () => {
 // create an event listener for messages
 bot.on("message", message => {
 	if (message.content === "!xivtweet") {
-		console.log("Responding to message.");
+		logger.info("Responding to message.");
 		twitterClient.get("statuses/user_timeline.json?screen_name="+FFXIV_TWITTER+"&count=1", function(error, tweets, response) {
 			if(error){
-				console.log(error);
+				logger.error(error);
 				message.channel.sendMessage("Error when getting tweet :(");
 				throw error;
 			}

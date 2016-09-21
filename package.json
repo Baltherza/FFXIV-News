@@ -20,6 +20,8 @@
     "discord.js": "^9.2.0",
     "lodash": "^4.16.1",
     "oauth": "^0.9.14",
-    "twitter": "^1.4.0"
+    "twitter": "^1.4.0",
+    "winston": "^2.2.0",
+    "winston-daily-rotate-file": "^1.3.1"
   }
 }
