@@ -35,9 +35,9 @@ var getLodestoneData = function(callback){
 
 var printLodestoneTopic = function(channel, topic){
 	log.info("Posting message to channel "+channel.id);
-	channel.sendMessage(topic.title);
-	channel.sendMessage(topic.url);
-	channel.sendMessage(topic.banner);
+	channel.sendMessage(topic.title + "\n" + 
+						topic.url + "\n" + 
+						topic.banner);
 };
 
 // log setup
