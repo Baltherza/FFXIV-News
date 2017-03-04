@@ -5,7 +5,7 @@ const request = require('request');
 
 // channel in discord to post new lodestone topics to
 const CHANNEL_NAME="final_fantasy_xiv";
-// discord stoken
+// discord token
 const token = process.env.DISCORD_BOT_SECRET;
 // how often to poll lodestone API
 const CHECK_INTERVAL = 5 * 60 * 1000;
@@ -71,7 +71,8 @@ bot.on("ready", () => {
 				var mostRecentTopic = data.topics[0];
 				// if the most recent is newer than what we've seen, post it
 				if(previousTopicTimestamp != null 
-					&& mostRecentTopic.timestamp > previousTopicTimestamp){ 
+					&& mostRecentTopic.timestamp > previousTopicTimestamp
+					&& mostRecentTopic.url && mostRecentTopic.url.match(/(na|eu)\.finalfantasyxiv/)){ 
 					_.each(bot.channels.findAll("name", CHANNEL_NAME), function(channel){
 						printLodestoneTopic(channel, mostRecentTopic);
 					});
