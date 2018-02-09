@@ -4,7 +4,7 @@ const winston = require("winston");
 const request = require('request');
 
 // channel in discord to post new lodestone topics to
-const CHANNEL_NAME="final_fantasy_xiv";
+const Willkommen="final_fantasy_xiv";
 // discord token
 const token = process.env.DISCORD_BOT_SECRET;
 // how often to poll lodestone API
